@@ -14,6 +14,7 @@ var genresRouter = require('./routes/genres');
 var imagesRouter = require('./routes/images');
 var moviesRouter = require('./routes/movies');
 var ratesRouter = require('./routes/rates');
+var viewsRouter = require('./routes/views');
 var watchLatersRouter = require('./routes/watch-laters');
 
 var app = express();
@@ -31,6 +32,7 @@ app.use('/genres', genresRouter);
 app.use('/images', imagesRouter);
 app.use('/movies', moviesRouter);
 app.use('/rates', ratesRouter);
+app.use('/views', viewsRouter);
 app.use('/watch-laters', watchLatersRouter);
 
 // catch 404 and forward to error handler
