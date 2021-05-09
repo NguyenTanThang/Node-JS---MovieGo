@@ -223,10 +223,191 @@ const deleteCustomer = async (req, res) => {
     }
 }
 
+const signUp = async (req, res) => {
+    try {
+        let {
+            username,
+            email,
+            password,
+        } = req.body;
+
+        const nullChecker = nullHandlersMany([
+            [username, "username cannot be null"],
+            [email, "email cannot be null"],
+            [password, "password cannot be null"],
+        ])
+
+        if (nullChecker) {
+            return res.json({
+                status: 400,
+                data: null,
+                success: false,
+                message: nullChecker
+            }) 
+        }
+
+        let customer = await Customer.findOne({
+            email,
+        });
+
+        if (customer) {
+            return res.json({
+                status: 400,
+                data: null,
+                success: false,
+                message: "Please enter a valid email"
+            }) 
+        }
+
+        password = encrypt(password);
+
+        customer = await new Customer({
+            username,
+            email,
+            password,
+            status: true,
+            created_date: Date.now(),
+            last_modified_date: Date.now()
+        }).save();
+
+        return res.json({
+            status: 200,
+            data: {
+                customer
+            },
+            success: true,
+            message: `Successfully signed up`
+        })
+    } catch (error) {
+        console.log(error);
+        return res.json({
+            status: 500,
+            message: "Internal Server Error",
+            data: null,
+            success: false
+        })
+    }
+}
+
+const updateProfile = async (req, res) => {
+    try {
+        const {customerID} = req.params;
+        let {
+            username,
+            password,
+        } = req.body;
+
+        const nullChecker = nullHandlersMany([
+            [username, "username cannot be null"],
+            [password, "password cannot be null"],
+        ])
+
+        if (nullChecker) {
+            return res.json({
+                status: 400,
+                data: null,
+                success: false,
+                message: nullChecker
+            }) 
+        }
+
+        let customer = await Customer.findById(customerID);
+
+        if (!customer) {
+            return res.json({
+                status: 400,
+                data: null,
+                success: false,
+                message: "There is no record which matches the ID"
+            }) 
+        }
+
+        password = encrypt(password);
+
+        customer = await Customer.findByIdAndUpdate(customerID, {
+            username,
+            password,
+            last_modified_date: Date.now()
+        })
+
+        return res.json({
+            status: 200,
+            data: {
+                customer
+            },
+            success: true,
+            message: `Successfully updated your profile`
+        })
+    } catch (error) {
+        console.log(error);
+        return res.json({
+            status: 500,
+            message: "Internal Server Error",
+            data: null,
+            success: false
+        })
+    }
+}
+
+const signIn = async (req, res) => {
+    try {
+        let {
+            email,
+            password,
+        } = req.body;
+
+        const nullChecker = nullHandlersMany([
+            [email, "email cannot be null"],
+            [password, "password cannot be null"],
+        ])
+
+        if (nullChecker) {
+            return res.json({
+                status: 400,
+                data: null,
+                success: false,
+                message: nullChecker
+            }) 
+        }
+
+        let customer = await Customer.findOne({
+            email,
+        });
+
+        if (!customer || !compare(password, customer.password)) {
+            return res.json({
+                status: 400,
+                data: null,
+                success: false,
+                message: "Invalid email or password"
+            }) 
+        }
+
+        return res.json({
+            status: 200,
+            data: {
+                customer
+            },
+            success: true,
+            message: `Successfully signed in`
+        })
+    } catch (error) {
+        console.log(error);
+        return res.json({
+            status: 500,
+            message: "Internal Server Error",
+            data: null,
+            success: false
+        })
+    }
+} 
+
 module.exports = {
     getAllCustomers,
     getCustomerByID,
     addCustomer,
     editCustomer,
-    deleteCustomer
+    deleteCustomer,
+    signUp,
+    signIn
 }

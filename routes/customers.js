@@ -5,7 +5,9 @@ const {
     getCustomerByID,
     addCustomer,
     editCustomer,
-    deleteCustomer
+    deleteCustomer,
+    signUp,
+    signIn
 } = require("../controllers/customerController");
 
 router.get('/', getAllCustomers);
@@ -13,6 +15,10 @@ router.get('/', getAllCustomers);
 router.get('/customerID/:id', getCustomerByID);
 
 router.post('/add', addCustomer);
+
+router.post('/sign-up', signUp);
+
+router.post('/sign-in', signIn);
 
 router.put('/edit/:id', editCustomer);
 

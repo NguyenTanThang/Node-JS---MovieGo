@@ -1,16 +1,32 @@
 const Genre = require("../models/Genre");
+const Movie = require("../models/Movie");
 const {nullHandlersMany} = require("../utils/validation");
 const ROUTE_NAME = "genre";
 const A_OR_AN = "a";
 
 const getAllGenres = async (req, res) => {
     try {
-        const genres = await Genre.find();
+        const genres = await Genre.find()
+        .sort([['name', 'ascending']]);
+        const movies = await Movie.find();
+        let genreNumberOfMovies = [];
+
+        for (let i = 0; i < genres.length; i++) {
+            const genre = genres[i];
+            let correctMovies = movies.filter(movieItem => {
+                return movieItem.genres.includes(genre.name);
+            });
+            genreNumberOfMovies = [
+                ...genreNumberOfMovies,
+                correctMovies.length
+            ]
+        }
 
         return res.json({
             status: 200,
             data: {
-                genres
+                genres,
+                genreNumberOfMovies
             },
             success: true
         })

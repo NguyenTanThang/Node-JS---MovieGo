@@ -1,4 +1,5 @@
 const Movie = require("../models/Movie");
+const View = require("../models/View");
 const {nullHandlersMany} = require("../utils/validation");
 const {getOMDBMovie} = require("../requests/omdbRequest");
 const ROUTE_NAME = "movie";
@@ -7,23 +8,31 @@ const A_OR_AN = "a";
 const getAllMovies = async (req, res) => {
     try {
         let movies = await Movie.find();
+        let views = await View.find();
+        let listOfNumberOfViews = [];
 
-        /*
         for (let i = 0; i < movies.length; i++) {
             const movie = movies[i];
+            let correctViews = views.filter(viewItem => {
+                return viewItem._doc.movieID === movie._id;
+            });
+            listOfNumberOfViews = [
+                ...listOfNumberOfViews,
+                correctViews.length
+            ]
+            /*
             const IMDBObject = await getOMDBMovie(movie.IMDB_ID);
             await Movie.findByIdAndUpdate(movie._id, {
                 IMDBObject
             });
+            */
         }
-
-        movies = await Movie.find();
-        */
 
         return res.json({
             status: 200,
             data: {
-                movies
+                movies,
+                listOfNumberOfViews
             },
             success: true
         })
@@ -52,6 +61,12 @@ const getMovieByID = async (req, res) => {
             })
         }
 
+        let views = await View.find();
+
+        let correctViews = views.filter(viewItem => {
+            return viewItem._doc.movieID === movie._id;
+        });
+
         const IMDBObject = await getOMDBMovie(movie.IMDB_ID);
         await Movie.findByIdAndUpdate(movie._id, {
             IMDBObject
@@ -61,7 +76,8 @@ const getMovieByID = async (req, res) => {
         return res.json({
             status: 200,
             data: {
-                movie
+                movie,
+                view: correctViews.length
             },
             success: true
         })
