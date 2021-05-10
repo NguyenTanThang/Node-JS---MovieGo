@@ -110,12 +110,10 @@ const getViewByID = async (req, res) => {
 const addView = async (req, res) => {
     try {
         const {
-            customerID,
             movieID
         } = req.body;
 
         const nullChecker = nullHandlersMany([
-            [customerID, "customerID cannot be null"],
             [movieID, "movieID cannot be null"],
         ])
 
@@ -129,7 +127,6 @@ const addView = async (req, res) => {
         }
 
         const view = await new View({
-            customerID,
             movieID,
             created_date: Date.now(),
             last_modified_date: Date.now()

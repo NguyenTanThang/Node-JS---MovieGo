@@ -6,10 +6,6 @@ const modelSchema = new Schema({
         type: String,
         required: true
     },
-    customerID: {
-        type: String,
-        required: true
-    },
     created_date: {
         type: Date,
         default: Date.now()
