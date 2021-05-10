@@ -1,7 +1,25 @@
 const Rate = require("../models/Rate");
+const {
+    updateMovieRating,
+    getMovieByID
+} = require("../requests/movieRequests");
 const {nullHandlersMany} = require("../utils/validation");
 const ROUTE_NAME = "rate";
 const A_OR_AN = "a";
+
+const changeRatingOfMovie = async (movieID) => {
+    let meanRating = 0;
+    const allReviews = await Rate.find({
+        movieID
+    });
+
+    allReviews.forEach(reviewItem => {
+        meanRating += reviewItem.rate;
+    });
+    meanRating = meanRating / allReviews.length;
+
+    await updateMovieRating(movieID, meanRating);
+}
 
 const getAllRates = async (req, res) => {
     try {
@@ -141,7 +159,9 @@ const addRate = async (req, res) => {
             rate,
             created_date: Date.now(),
             last_modified_date: Date.now()
-        }).save()
+        }).save();
+
+        await changeRatingOfMovie(movieID)
 
         return res.json({
             status: 200,
@@ -205,6 +225,8 @@ const editRate = async (req, res) => {
             last_modified_date: Date.now()
         })
         updatedRate = await Rate.findById(id);
+
+        await changeRatingOfMovie(movieID)
 
         return res.json({
             status: 200,

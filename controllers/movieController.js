@@ -1,9 +1,80 @@
 const Movie = require("../models/Movie");
 const View = require("../models/View");
+const Rate = require("../models/Rate");
 const {nullHandlersMany} = require("../utils/validation");
 const {getOMDBMovie} = require("../requests/omdbRequest");
 const ROUTE_NAME = "movie";
 const A_OR_AN = "a";
+
+const reformAllMovies = async (req, res) => {
+    try {
+        let movies = await Movie.find().sort([['created_date', 'ascending']]);
+
+        /*
+        for (let index = 0; index < movies.length; index++) {
+            const movie = movies[index];
+            const {_id} = movie;
+            
+            await Movie.findByIdAndUpdate(_id, {
+                rating: 0
+            })
+        }
+        */
+
+       for (let index = 0; index < movies.length; index++) {
+            const movie = movies[index];
+            const {_id} = movie;
+        
+            await Movie.findByIdAndUpdate(_id, {
+                rating: 0
+            })
+        }
+
+        movies = await Movie.find().sort([['created_date', 'ascending']]);
+        
+        /*
+        var obj = {
+            movies: []
+         };
+        for (let index = 0; index < movies.length; index++) {
+            const movie = movies[index];
+            obj.movies.push(movie._doc);
+        }
+        var json = JSON.stringify(obj);
+        var fileURL = `E:/Test Things Out/Test Movies Website (refined) (act 2)/1. Official/sever/seeders/jsonFiles/movies.json`
+        var exists = fs.existsSync(fileURL);
+        if (exists) {
+            fs.unlinkSync(fileURL);
+        }
+        fs.writeFileSync(fileURL, json, 'utf8');
+        */
+
+        res.status(200).json({
+            success: true,
+            data: movies,
+            length: movies.length,
+            status: 200
+        })
+    } catch (error) {
+        console.log(error);
+        res.json({
+            success: false,
+            data: null,
+            message: `Internal Server Error`,
+            status: 500
+        })
+    }
+}
+
+const getRandomInArray = (arr, numberOfElements) => {
+    // Shuffle array
+    const shuffled = arr.sort(() => 0.5 - Math.random());
+
+    // Get sub-array of first n elements after shuffled
+    let selected = shuffled.slice(0, numberOfElements);
+    
+    return selected;
+}
 
 const getAllMovies = async (req, res) => {
     try {
@@ -13,8 +84,9 @@ const getAllMovies = async (req, res) => {
 
         for (let i = 0; i < movies.length; i++) {
             const movie = movies[i];
+            console.log(views);
             let correctViews = views.filter(viewItem => {
-                return viewItem._doc.movieID === movie._id;
+                return viewItem.movieID == movie._id;
             });
             listOfNumberOfViews = [
                 ...listOfNumberOfViews,
@@ -47,6 +119,85 @@ const getAllMovies = async (req, res) => {
     }
 }
 
+const getAllMoviesForRecommendation  = async (req, res) => {
+    try {
+        let movies = await Movie.find();
+        let views = await View.find();
+        let listOfNumberOfViews = {};
+
+        for (let i = 0; i < movies.length; i++) {
+            const movie = movies[i];
+            let correctViews = views.filter(viewItem => {
+                return viewItem._doc.movieID == movie._id;
+            });
+            listOfNumberOfViews = {
+                ...listOfNumberOfViews,
+                [movie._id]: {
+                    movie: movie,
+                    numberOfViews: correctViews.length
+                }
+            }
+            /*
+            const IMDBObject = await getOMDBMovie(movie.IMDB_ID);
+            await Movie.findByIdAndUpdate(movie._id, {
+                IMDBObject
+            });
+            */
+        }
+
+        let recMoviesObject = {};
+        /*
+            Trending: most viewed,
+            Top Rating: highest rated,
+            New Release: newly added,
+            Random: randomize
+        */
+        let trendingMovies = [];
+
+        var sortable = [];
+        for (let listOfNumberOfViewItem in listOfNumberOfViews) {
+            sortable.push([listOfNumberOfViewItem, listOfNumberOfViews[listOfNumberOfViewItem]]);
+        }
+
+        sortable = sortable.sort(function(a, b) {
+            return b[1].numberOfViews - a[1].numberOfViews;
+        }).splice(0, 15);
+
+        for (let i = 0; i < sortable.length; i++) {
+            trendingMovies.push(sortable[i][1].movie);
+        }
+
+        let topRatingMovies = movies.sort((a, b) => b._doc.rating - a._doc.rating).splice(0, 15);
+        let newReleaseMovies = movies.sort((a, b) => new Date(b._doc.created_date).getTime() - new Date(a._doc.created_date).getTime()).splice(0, 15);
+        let randomMovies = getRandomInArray(movies, 15);
+
+        recMoviesObject = {
+            trendingMovies,
+            topRatingMovies,
+            newReleaseMovies,
+            randomMovies
+        }
+
+        return res.json({
+            status: 200,
+            data: {
+                listOfNumberOfViews,
+                recMoviesObject
+            },
+            success: true
+        })
+    } catch (error) {
+        console.log(error);
+        return res.json({
+            status: 500,
+            message: "Internal Server Error",
+            data: null,
+            success: false
+        })
+    }
+}
+
+
 const getMovieByID = async (req, res) => {
     try {
         const {id} = req.params;
@@ -64,7 +215,7 @@ const getMovieByID = async (req, res) => {
         let views = await View.find();
 
         let correctViews = views.filter(viewItem => {
-            return viewItem._doc.movieID === movie._id;
+            return viewItem._doc.movieID == movie._id;
         });
 
         const IMDBObject = await getOMDBMovie(movie.IMDB_ID);
@@ -264,5 +415,7 @@ module.exports = {
     getMovieByID,
     addMovie,
     editMovie,
-    deleteMovie
+    deleteMovie,
+    getAllMoviesForRecommendation,
+    reformAllMovies
 }

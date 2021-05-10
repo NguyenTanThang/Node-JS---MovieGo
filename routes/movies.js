@@ -5,10 +5,16 @@ const {
     getMovieByID,
     addMovie,
     editMovie,
-    deleteMovie
+    deleteMovie,
+    getAllMoviesForRecommendation,
+    reformAllMovies
 } = require("../controllers/movieController");
 
 router.get('/', getAllMovies);
+
+router.get("/reform", reformAllMovies);
+
+router.get('/rec', getAllMoviesForRecommendation);
 
 router.get('/movieID/:id', getMovieByID);
 
