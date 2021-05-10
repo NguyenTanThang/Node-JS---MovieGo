@@ -5,14 +5,17 @@ const {
     getAllWatchLatersByCustomerID,
     getWatchLaterByID,
     addWatchLater,
-    deleteWatchLater
+    deleteWatchLater,
+    getAllWatchLatersByCustomerIDAndMovieID
 } = require("../controllers/watchLaterController");
 
 router.get('/', getAllWatchLaters);
 
-router.get('/genreID/:id', getWatchLaterByID);
+router.get('/watchLaterID/:id', getWatchLaterByID);
 
-router.get('/customerID/:id', getAllWatchLatersByCustomerID);
+router.get('/customerID/:customerID', getAllWatchLatersByCustomerID);
+
+router.get('/customerID/:customerID/movieID/:movieID', getAllWatchLatersByCustomerIDAndMovieID);
 
 router.post('/add', addWatchLater);
 

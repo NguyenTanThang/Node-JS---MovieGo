@@ -133,7 +133,7 @@ const addView = async (req, res) => {
             movieID,
             created_date: Date.now(),
             last_modified_date: Date.now()
-        })
+        }).save()
 
         return res.json({
             status: 200,

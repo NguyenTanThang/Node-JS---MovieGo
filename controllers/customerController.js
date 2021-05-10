@@ -91,7 +91,7 @@ const addCustomer = async (req, res) => {
             status,
             created_date: Date.now(),
             last_modified_date: Date.now()
-        })
+        }).save()
 
         return res.json({
             status: 200,
@@ -409,5 +409,6 @@ module.exports = {
     editCustomer,
     deleteCustomer,
     signUp,
-    signIn
+    signIn,
+    updateProfile
 }

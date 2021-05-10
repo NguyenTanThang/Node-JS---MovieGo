@@ -141,7 +141,7 @@ const addRate = async (req, res) => {
             rate,
             created_date: Date.now(),
             last_modified_date: Date.now()
-        })
+        }).save()
 
         return res.json({
             status: 200,
@@ -203,13 +203,13 @@ const editRate = async (req, res) => {
             rate,
             created_date: Date.now(),
             last_modified_date: Date.now()
-        }).save();
+        })
         updatedRate = await Rate.findById(id);
 
         return res.json({
             status: 200,
             data: {
-                updatedRate
+                rate: updatedRate
             },
             success: true,
             message: `Successfully updated ${A_OR_AN} ${ROUTE_NAME}`

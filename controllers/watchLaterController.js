@@ -1,3 +1,5 @@
+const Movie = require("../models/Movie");
+const View = require("../models/View");
 const WatchLater = require("../models/WatchLater");
 const {nullHandlersMany} = require("../utils/validation");
 const ROUTE_NAME = "watch later item";
@@ -32,10 +34,64 @@ const getAllWatchLatersByCustomerID = async (req, res) => {
             customerID
         });
 
+        let views = await View.find();
+        let movies = [];
+        let listOfNumberOfViews = [];
+
+        for (let i = 0; i < watchLaters.length; i++) {
+            const watchLater = watchLaters[i];
+            const correctMovie = await Movie.findById(watchLater._doc.movieID);
+            let correctViews = views.filter(viewItem => {
+                return viewItem._doc.movieID === watchLater._doc.movieID;
+            });
+            listOfNumberOfViews = [
+                ...listOfNumberOfViews,
+                correctViews.length
+            ]
+            movies = [
+                ...movies,
+                correctMovie
+            ]
+            /*
+            const IMDBObject = await getOMDBMovie(movie.IMDB_ID);
+            await Movie.findByIdAndUpdate(movie._id, {
+                IMDBObject
+            });
+            */
+        }
+
+
         return res.json({
             status: 200,
             data: {
-                watchLaters
+                movies,
+                watchLaters,
+                listOfNumberOfViews
+            },
+            success: true
+        })
+    } catch (error) {
+        console.log(error);
+        return res.json({
+            status: 500,
+            message: "Internal Server Error",
+            data: null,
+            success: false
+        })
+    }
+}
+
+const getAllWatchLatersByCustomerIDAndMovieID = async (req, res) => {
+    try {
+        const {customerID, movieID} = req.params;
+        const watchLater = await WatchLater.findOne({
+            customerID, movieID
+        });
+
+        return res.json({
+            status: 200,
+            data: {
+                watchLater
             },
             success: true
         })
@@ -108,7 +164,7 @@ const addWatchLater = async (req, res) => {
             movieID,
             created_date: Date.now(),
             last_modified_date: Date.now()
-        })
+        }).save();
 
         return res.json({
             status: 200,
@@ -234,5 +290,6 @@ module.exports = {
     getAllWatchLatersByCustomerID,
     getWatchLaterByID,
     addWatchLater,
-    deleteWatchLater
+    deleteWatchLater,
+    getAllWatchLatersByCustomerIDAndMovieID
 }

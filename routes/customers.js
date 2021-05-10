@@ -7,7 +7,8 @@ const {
     editCustomer,
     deleteCustomer,
     signUp,
-    signIn
+    signIn,
+    updateProfile
 } = require("../controllers/customerController");
 
 router.get('/', getAllCustomers);
